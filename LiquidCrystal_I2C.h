@@ -88,6 +88,7 @@ public:
 #endif
   void command(uint8_t);
   void init();
+  void init(TwoWire *Wire, uint8_t scl, uint8_t sda, uint32_t speed );
   void oled_init();
 
 ////compatibility API function aliases
@@ -126,6 +127,10 @@ private:
   uint8_t _cols;
   uint8_t _rows;
   uint8_t _backlightval;
+  TwoWire *_Wire = nullptr;
+  uint8_t scl;
+  uint8_t sda;
+  uint32_t speed;
 };
 
 #endif
