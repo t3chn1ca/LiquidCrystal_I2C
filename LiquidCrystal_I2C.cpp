@@ -6,7 +6,6 @@
 
 #include "Arduino.h"
 
-#define printIIC(args) Wire.write(args)
 #define _printIIC(args) _Wire->write(args)
 
 inline size_t LiquidCrystal_I2C::write(uint8_t value)
@@ -18,8 +17,7 @@ inline size_t LiquidCrystal_I2C::write(uint8_t value)
 #else
 #include "WProgram.h"
 
-#define printIIC(args) Wire.send(args)
-#define _printIIC(args) _Wire->write(args)
+#define printIIC(args) _Wire.send(args)
 
 inline void LiquidCrystal_I2C::write(uint8_t value)
 {
@@ -59,12 +57,14 @@ LiquidCrystal_I2C::LiquidCrystal_I2C(uint8_t lcd_Addr, uint8_t lcd_cols, uint8_t
 
 void LiquidCrystal_I2C::oled_init()
 {
+	_Wire = &Wire;
 	_oled = true;
 	init_priv();
 }
 
 void LiquidCrystal_I2C::init()
 {
+	Wire.begin();
 	init_priv();
 }
 
@@ -74,20 +74,12 @@ void LiquidCrystal_I2C::init(TwoWire *Wire, uint8_t scl, uint8_t sda, uint32_t s
 	this->scl = scl;
 	this->sda = sda;
 	this->speed = speed;
+	_Wire->begin(sda, scl, speed);
 	init_priv();
 }
 
 void LiquidCrystal_I2C::init_priv()
-{
-	if (_Wire != nullptr)
-	{
-
-		_Wire->begin(sda, scl, speed);
-	}
-	else
-	{
-		Wire.begin();
-	}
+{	
 	_displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
 	begin(_cols, _rows);
 }
@@ -314,25 +306,9 @@ void LiquidCrystal_I2C::write4bits(uint8_t value)
 
 void LiquidCrystal_I2C::expanderWrite(uint8_t _data)
 {
-	if (_Wire != nullptr)
-	{
-		_Wire->beginTransmission(_Addr);
-		_printIIC((int)(_data) | _backlightval);
-	}
-	else
-	{
-		Wire.beginTransmission(_Addr);
-		printIIC((int)(_data) | _backlightval);
-	}
-
-	if (_Wire != nullptr)
-	{
-		_Wire->endTransmission(_Addr);
-	}
-	else
-	{
-		Wire.endTransmission(_Addr);
-	}
+	_Wire->beginTransmission(_Addr);
+	_printIIC((int)(_data) | _backlightval);
+	_Wire->endTransmission(_Addr);
 }
 
 void LiquidCrystal_I2C::pulseEnable(uint8_t _data)
